@@ -20,6 +20,9 @@ public class Article {
     private String title;
     @Column
     private String content;
+
+    @Column
+    private String author;
 // Article.java 파일 안쪽 (클래스 끝나기 전)
 
     public void patch(Article article) {
@@ -29,5 +32,6 @@ public class Article {
         if (article.content != null) {
             this.content = article.content;
         }
+
     }
 }

@@ -1,0 +1,30 @@
+### 1. 회원가입 테스트 (유저 만들기)
+POST http://localhost:8080/user
+Content-Type: application/x-www-form-urlencoded
+
+email=jwt3@test.com&password=1234
+
+### 2. 로그인 테스트 (토큰 받기)
+# 회원가입 성공하면 이걸 실행! accessToken과 refreshToken이 와야 함.
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "email": "jwt3@test.com",
+  "password": "1234"
+}
+
+### 3. 게시글 목록 조회 (토큰 없이 접근 - 실패해야 함 403)
+GET http://localhost:8080/api/articles
+
+### 4. 게시글 목록 조회 (토큰 넣고 접근 - 성공해야 함 200)
+# 'Bearer ' 뒤에 로그인해서 받은 accessToken을 복붙해서 넣으세요!
+GET http://localhost:8080/api/articles
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhanVmcmVzaEBnbWFpbC5jb20iLCJpYXQiOjE3NzAyNzA2MTYsImV4cCI6MTc3MDI3NzgxNiwic3ViIjoiand0M0B0ZXN0LmNvbSIsImlkIjo2fQ.fO92Pne4u4r0K83SNo2WBu8qPqblZWqE8d3Q-EaJOGU
+### 5. 토큰 갱신하기 (Refresh Token 써서 새 Access Token 받기)
+POST http://localhost:8080/api/token
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhanVmcmVzaEBnbWFpbC5jb20iLCJpYXQiOjE3NzAyNzA2MTYsImV4cCI6MTc3MTQ4MDIxNiwic3ViIjoiand0M0B0ZXN0LmNvbSIsImlkIjo2fQ.wHBieFcqGyyfPcFQMqa20sLdXg3buNesEPQQLFOSE84"
+}

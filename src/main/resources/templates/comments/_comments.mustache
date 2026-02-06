@@ -1,0 +1,188 @@
+<div id="comments-list">
+    {{#commentDtos}}
+        <div class="card m-2" id="comments-{{id}}">
+            <div class="card-header">
+                {{nickname}}
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#comment-edit-modal"
+                        data-bs-id="{{id}}"
+                        data-bs-nickname="{{nickname}}"
+                        data-bs-body="{{body}}"
+                        data-bs-article-id="{{articleId}}">수정</button>
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger comment-delete-btn"
+                        data-comment-id="{{id}}">삭제</button>
+            </div>
+            <div class="card-body">
+                {{body}}
+            </div>
+        </div>
+    {{/commentDtos}}
+</div>
+
+<div class="card m-2" id="comments-new">
+    <div class="card-body">
+        <form>
+            <div class="mb-3">
+                <label class="form-label">닉네임</label>
+                <input type="text" class="form-control" id="new-comment-nickname">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">댓글 내용</label>
+                <textarea type="text" class="form-control" rows="3" id="new-comment-body"></textarea>
+            </div>
+            {{#article}}
+                <input type="hidden" id="new-comment-article-id" value="{{id}}">
+            {{/article}}
+            <button type="button" class="btn btn-primary" id="comment-create-btn">댓글 작성</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="comment-edit-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">댓글 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">닉네임</label>
+                        <input type="text" class="form-control" id="edit-comment-nickname">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">댓글 내용</label>
+                        <textarea type="text" class="form-control" rows="3" id="edit-comment-body"></textarea>
+                    </div>
+                    <input type="hidden" id="edit-comment-id">
+                    <input type="hidden" id="edit-comment-article-id">
+                    <button type="button" class="btn btn-primary" id="comment-update-btn">수정 완료</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    {
+        // 1. 댓글 작성 (Create)
+        const commentCreateBtn = document.querySelector("#comment-create-btn");
+
+        if (commentCreateBtn) {
+            commentCreateBtn.addEventListener("click", function() {
+                const comment = {
+                    nickname: document.querySelector("#new-comment-nickname").value,
+                    body: document.querySelector("#new-comment-body").value,
+                    articleId: document.querySelector("#new-comment-article-id").value
+                };
+
+                const url = "/api/articles/" + comment.articleId + "/comments";
+
+                // ⭐ 토큰 가져오기
+                const token = localStorage.getItem('access_token');
+
+                fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify(comment),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token // 헤더에 토큰 탑재!
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        alert("댓글이 등록되었습니다.");
+                        window.location.reload();
+                    } else {
+                        alert("댓글 등록 실패..! (로그인 확인)");
+                    }
+                });
+            });
+        }
+
+        // 2. 댓글 수정 모달 데이터 바인딩
+        const commentEditModal = document.querySelector("#comment-edit-modal");
+        if (commentEditModal) {
+            commentEditModal.addEventListener("show.bs.modal", function(event) {
+                const triggerBtn = event.relatedTarget;
+                const id = triggerBtn.getAttribute("data-bs-id");
+                const nickname = triggerBtn.getAttribute("data-bs-nickname");
+                const body = triggerBtn.getAttribute("data-bs-body");
+                const articleId = triggerBtn.getAttribute("data-bs-article-id");
+
+                document.querySelector("#edit-comment-nickname").value = nickname;
+                document.querySelector("#edit-comment-body").value = body;
+                document.querySelector("#edit-comment-id").value = id;
+                document.querySelector("#edit-comment-article-id").value = articleId;
+            });
+        }
+
+        // 3. 댓글 수정 (Update)
+        const commentUpdateBtn = document.querySelector("#comment-update-btn");
+        if (commentUpdateBtn) {
+            commentUpdateBtn.addEventListener("click", function() {
+                const comment = {
+                    id: document.querySelector("#edit-comment-id").value,
+                    nickname: document.querySelector("#edit-comment-nickname").value,
+                    body: document.querySelector("#edit-comment-body").value,
+                    article_id: document.querySelector("#edit-comment-article-id").value
+                };
+
+                const url = "/api/comments/" + comment.id;
+
+                // ⭐ 토큰 가져오기
+                const token = localStorage.getItem('access_token');
+
+                fetch(url, {
+                    method: "PATCH",
+                    body: JSON.stringify(comment),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token // 헤더에 토큰 탑재!
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        alert("댓글이 수정되었습니다.");
+                        window.location.reload();
+                    } else {
+                        alert("댓글 수정 실패..! (로그인 확인)");
+                    }
+                });
+            });
+        }
+
+        // 4. 댓글 삭제 (Delete)
+        const commentDeleteBtns = document.querySelectorAll(".comment-delete-btn");
+        commentDeleteBtns.forEach(btn => {
+            btn.addEventListener("click", (event) => {
+                const deleteBtn = event.target;
+                const commentId = deleteBtn.getAttribute("data-comment-id");
+
+                if (confirm("진짜 삭제할까요?")) {
+                    const url = `/api/comments/${commentId}`;
+
+                    // ⭐ 토큰 가져오기
+                    const token = localStorage.getItem('access_token');
+
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Authorization": "Bearer " + token // 헤더에 토큰 탑재!
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            alert("삭제 완료!");
+                            const target = document.querySelector(`#comments-${commentId}`);
+                            target.remove();
+                        } else {
+                            alert("댓글 삭제 실패..! (로그인 확인)");
+                        }
+                    });
+                }
+            });
+        });
+    }
+</script>

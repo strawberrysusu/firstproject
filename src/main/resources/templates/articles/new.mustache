@@ -1,18 +1,55 @@
 {{>layouts/header}}
 
+<div class="container">
+    <form class="container">
+        <div class="mb-3">
+            <label class="form-label">제목</label>
+            <input type="text" class="form-control" id="title">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">내용</label>
+            <textarea class="form-control" rows="3" id="content"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" id="create-btn">Submit</button>
+        <a href="/articles">Back</a>
+    </form>
+</div>
 
-<form class="container" action="/articles/create" method="post">
-    <div class="mb-3">
-        <label class="form-label">제목</label>
-        <input type="text" class="form-control" name="title">
-    </div>
-    <div class="mb-3">
-        <label class="form-label">내용</label>
-        <textarea class="form-control" rows="3" name="content"></textarea>
+<script>
+    // 버튼 클릭 이벤트 감지
+    const createButton = document.getElementById('create-btn');
 
-    </div>
+    if (createButton) {
+        createButton.addEventListener('click', event => {
+            // 1. 입력한 데이터 가져오기
+            let title = document.getElementById('title').value;
+            let content = document.getElementById('content').value;
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a href="/articles">Back</a>
-</form>
+            // 2. 저장된 토큰 꺼내기 (이게 핵심!!!)
+            let token = localStorage.getItem('access_token');
+
+            // 3. API로 데이터 전송 (Fetch)
+            fetch(`/api/articles`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    // ⭐ 헤더에 토큰을 실어서 보냄!
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    title: title,
+                    content: content
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('글이 등록되었습니다.');
+                    window.location.replace("/articles"); // 성공하면 목록으로 이동
+                } else {
+                    alert('글 등록 실패! (로그인이 필요하거나 서버 문제)');
+                }
+            });
+        });
+    }
+</script>
+
 {{>layouts/footer}}

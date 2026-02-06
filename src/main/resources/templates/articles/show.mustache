@@ -6,6 +6,7 @@
         <th scope="col">Id</th>
         <th scope="col">Title</th>
         <th scope="col">Content</th>
+        <th scope="col">Author</th>
     </tr>
     </thead>
     <tbody>
@@ -14,14 +15,47 @@
             <th>{{id}}</th>
             <td>{{title}}</td>
             <td>{{content}}</td>
+            <td>{{#author}}{{author}}{{/author}}{{^author}}익명{{/author}}</td>
         </tr>
     {{/article}}
     </tbody>
 </table>
 
-<a href="/articles/{{article.id}}/edit" class="btn btn-primary">Edit</a>
-<a href="/articles/{{article.id}}/delete" class="btn btn-danger">Delete</a>
+{{#article}}
+    <a href="/articles/{{id}}/edit" class="btn btn-primary">Edit</a>
+    <button type="button" class="btn btn-danger" id="delete-btn">Delete</button>
+    <a href="/articles">Go to Article List</a>
+    <input type="hidden" id="article-id" value="{{id}}">
+{{/article}}
 
-<a href="/articles">Go to Article List</a>
+<script>
+    const deleteButton = document.getElementById('delete-btn');
+
+    if (deleteButton) {
+        deleteButton.addEventListener('click', event => {
+            let id = document.getElementById('article-id').value;
+
+            // 토큰 꺼내기
+            let token = localStorage.getItem('access_token');
+
+            if (confirm("진짜 삭제할까요?")) {
+                fetch(`/api/articles/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        "Authorization": "Bearer " + token // 토큰 탑재
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        alert('삭제되었습니다.');
+                        window.location.replace("/articles"); // 목록으로 이동
+                    } else {
+                        alert('삭제 실패! (로그인 확인 필요)');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{{>comments/_comments}}
 
 {{>layouts/footer}}

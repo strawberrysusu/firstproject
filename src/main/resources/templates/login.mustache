@@ -1,0 +1,76 @@
+{{>layouts/header}}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h3 class="text-center mb-4">로그인</h3>
+
+            <form>
+                <div class="mb-3">
+                    <label class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password">
+                </div>
+
+                <button type="button" class="btn btn-primary w-100 mb-2" id="login-submit-btn">로그인</button>
+            </form>
+
+            <a href="/oauth2/authorization/google" class="btn btn-success w-100 active" role="button">Google 로그인</a>
+
+            <div class="mt-3 text-center">
+                <a href="/signup" class="btn btn-link">회원가입</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 👇 [수정] 바뀐 ID로 찾기
+        const loginSubmitBtn = document.getElementById('login-submit-btn');
+
+        if (loginSubmitBtn) {
+            loginSubmitBtn.addEventListener('click', function() {
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    alert("이메일과 비밀번호를 입력해주세요.");
+                    return;
+                }
+
+                // API 호출
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.json();
+                            } else {
+                                alert("로그인 실패! 아이디/비번을 확인하세요.");
+                                throw new Error("Login failed");
+                            }
+                        })
+                        .then(data => {
+                            localStorage.setItem('access_token', data.token);
+                            alert("로그인 성공!");
+                            window.location.replace('/articles');
+                        })
+                        .catch(error => console.error("Error:", error));
+            });
+        }
+    });
+</script>
+
+{{>layouts/footer}}

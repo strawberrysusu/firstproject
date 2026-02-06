@@ -1,24 +1,41 @@
 {{>layouts/header}}
 
-
 <table class="table">
     <thead>
     <tr>
         <th scope="col">Id</th>
         <th scope="col">Title</th>
         <th scope="col">Content</th>
+        <th scope="col">Author</th>
     </tr>
     </thead>
     <tbody>
     {{#articleList}}
         <tr>
             <th>{{id}}</th>
-            <td><a href="/articles/{{id}}">{{title}}</a> </td>
+            <td><a href="/articles/{{id}}">{{title}}</a></td>
             <td>{{content}}</td>
+            <td>{{#author}}{{author}}{{/author}}{{^author}}익명{{/author}}</td>
         </tr>
     {{/articleList}}
     </tbody>
 </table>
-<a href="/articles/new">New Articles</a>
+
+<a href="/articles/new" class="btn btn-primary">New Article</a>
+
+<script>
+    // 1. 주소창에서 토큰 낚아채기 (구글 로그인 직후)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    // 2. 토큰이 있으면?
+    if (token) {
+        // (1) 브라우저 저장소(Local Storage)에 저장
+        localStorage.setItem('access_token', token);
+
+        // (2) 주소창 깔끔하게 청소 (토큰 지우고 새로고침)
+        window.location.replace('/articles');
+    }
+</script>
 
 {{>layouts/footer}}

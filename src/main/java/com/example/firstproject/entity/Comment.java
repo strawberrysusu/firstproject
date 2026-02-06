@@ -1,7 +1,7 @@
 package com.example.firstproject.entity;
 
 import com.example.firstproject.dto.CommentDto;
-import jakarta.persistence.*; // 👈 이거 없으면 빨간 줄 뜬다. (Alt+Enter 필수)
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,12 +14,12 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Comment {
 
-    @Id // 👇 이게 있어야 "이게 PK(주민번호)다"라고 인식함!
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne // 👇 이게 있어야 "게시글(Article)이랑 연결해라"라고 인식함!
-    @JoinColumn(name = "article_id") // 테이블에 'article_id'라는 기둥을 세워라!
+    @ManyToOne // 댓글 여러 개가 하나의 게시글에 달림
+    @JoinColumn(name = "article_id") // 테이블에 연결될 컬럼 이름
     private Article article;
 
     @Column
@@ -28,34 +28,32 @@ public class Comment {
     @Column
     private String body;
 
+    // 댓글 수정할 때 쓸 메서드
+    public void patch(CommentDto dto) {
+        if (this.id != dto.getId())
+            throw new IllegalArgumentException("댓글 수정 실패! 잘못된 id가 입력되었습니다.");
+
+        if (dto.getNickname() != null)
+            this.nickname = dto.getNickname();
+
+        if (dto.getBody() != null)
+            this.body = dto.getBody();
+    }
+
+    // DTO를 엔티티로 변환하는 메서드 (생성 메서드)
     public static Comment createComment(CommentDto dto, Article article) {
-
-        //예외 발생
+        // 예외 처리
         if (dto.getId() != null)
-            throw new IllegalArgumentException("댓글 생성 실패! 댓글의 Id가 없어야 합니다.");
+            throw new IllegalArgumentException("댓글 생성 실패! 댓글의 id가 없어야 합니다.");
+        if (dto.getArticleId() != article.getId())
+            throw new IllegalArgumentException("댓글 생성 실패! 게시글의 id가 잘못되었습니다.");
 
-        if(dto.getArticleId() != article.getId())
-            throw new IllegalArgumentException("댓글 생성실패 ! 게시글의 id 가 잘못 되었습니다.");
-        // 엔티티생성 및 반환
-
+        // 엔티티 생성 및 반환
         return new Comment(
                 dto.getId(),
                 article,
                 dto.getNickname(),
                 dto.getBody()
         );
-    }
-
-    public void patch(CommentDto dto) {
-        //예외 발생
-        if(this.id !=dto.getId())
-            throw new IllegalArgumentException("댓글수정 실패! 잘못된 id 가 입력됐습니다.");
-
-        //객체 갱신
-        if(dto.getNickname() != null)
-            this.nickname = dto.getNickname();
-        if(dto.getBody() != null)
-            this.body = dto.getBody();
-
     }
 }

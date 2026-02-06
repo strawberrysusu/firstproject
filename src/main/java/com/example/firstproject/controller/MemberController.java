@@ -1,34 +1,48 @@
 package com.example.firstproject.controller;
 
 import com.example.firstproject.dto.MemberForm;
-import com.example.firstproject.entity.Member;
-import com.example.firstproject.repository.MemberRepository;
+import com.example.firstproject.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Slf4j
+@RequiredArgsConstructor
 @Controller
-
 public class MemberController {
-    @Autowired
-    private MemberRepository memberRepository;
-    @GetMapping("members/new")
-    public String newArticleForm() {
-        return "members/new";
+
+
+    private final MemberService memberService;
+
+    // 1. 회원가입 페이지 보여주기
+    @GetMapping("/signup")
+    public String signup() {
+        return "signup"; // signup.mustache 연결
     }
-    @PostMapping("/join")
-    public String createArticle(MemberForm form){
-        log.info(form.toString());
-        //System.out.println(form.toString());
-        Member member = form.toEntity();
-        log.info(member.toString());
-        //System.out.println(member.toString());
-        Member saved = memberRepository.save(member);
-        log.info(saved.toString());
-        //System.out.println(saved.toString());
-        return "";
+
+    // 2. 회원가입 처리
+    @PostMapping("/user")
+    public String signup(MemberForm request) {
+        memberService.save(request); // 회원가입 로직 실행
+        return "redirect:/login"; // 가입 끝나면 로그인 페이지로 이동
+    }
+
+    // 3. 로그인 페이지 보여주기
+    @GetMapping("/login")
+    public String login() {
+        return "login"; // login.mustache 연결
+    }
+
+    // 4. 로그아웃 처리
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+        return "redirect:/login";
     }
 }
