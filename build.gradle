@@ -28,6 +28,8 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     // 👇 [추가] 구글 로그인용 라이브러리
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // Redis 추가
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     // 👇 [추가] JWT 라이브러리 3대장
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
